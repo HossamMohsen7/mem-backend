@@ -34,6 +34,7 @@ RUN pnpm add -g pm2
 
 ARG NODE_ENV=production
 ENV NODE_ENV=${NODE_ENV}
+CMD [ "pm2-runtime", "start", "dist/app.js", "-i", "max" ]
 
 FROM source AS dev
 ARG NODE_ENV=development
