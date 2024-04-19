@@ -1,14 +1,25 @@
 import AppError from "../models/error.js";
 export const errorCodes = {
+  validation: 997,
+  notFound: 998,
+  notAllowed: 999,
   unexpected: 1999,
-  notFound: 1000,
-  validation: 1001,
   invalidLogin: 1000,
   invalidAuth: 1001,
   userExists: 1002,
   invalidProvider: 1003,
   invalidProviderToken: 1004,
   insufficientTokenPermission: 1005,
+  circleNotFound: 1006,
+  invalidImage: 1007,
+  formNotFound: 1008,
+  formClosed: 1009,
+  alreadySubmitted: 1010,
+  applicantNotFound: 1011,
+  invalidEmail: 1012,
+  slotNotFound: 1013,
+  slotNotAvailable: 1014,
+  invalidResetPasswordToken: 1015,
 } as const;
 
 export const errors = {
