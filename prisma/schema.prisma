@@ -2,20 +2,90 @@ generator client {
   provider = "prisma-client-js"
 }
 
-// datasource db {
-//   provider = "postgresql"
-//   url      = env("DATABASE_URL")
-// }
-
 datasource db {
-  provider = "sqlite"
-  url      = "file:./dev.db"
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+enum UserType {
+  ADMIN
+  RELATED
+  STUTTERER
 }
 
 model User {
-  id        Int      @id @default(autoincrement())
-  email     String   @unique
-  name      String?
+  id                String   @id @default(uuid())
+  email             String   @unique
+  firstName         String
+  lastName          String
+  password          String
+  type              UserType
+  username          String   @unique
+  googleToken       String?
+  profilePictureUrl String?
+
+  resetPasswordToken     String?
+  resetPasswordExpiry    DateTime?
+  resetPasswordIp        String?
+  resetPasswordRequestAt DateTime?
+  tokenIds               String[]  @default([])
+
+  createdAt           DateTime       @default(now())
+  updatedAt           DateTime       @updatedAt
+  notificatiosCreated Notification[]
+  groups              Group[]        @relation("GroupMembers")
+  createdGroups       Group[]        @relation("CreatedBy")
+  sentMessages        Message[]
+  createdExercies     Exercise[]
+}
+
+model Group {
+  id          String    @id @default(uuid())
+  name        String
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  members     User[]    @relation("GroupMembers")
+  createdBy   User?     @relation("CreatedBy", fields: [createdById], references: [id])
+  createdById String?
+  messages    Message[]
+}
+
+model Notification {
+  id      String   @id @default(uuid())
+  message String
+  for     UserType
+  userId  String
+  user    User     @relation(fields: [userId], references: [id])
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+
+model Message {
+  id        String   @id @default(uuid())
+  content   String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  sender    User     @relation(fields: [senderId], references: [id])
+  senderId  String
+  group     Group    @relation(fields: [groupId], references: [id])
+  groupId   String
+}
+
+enum ExerciseType {
+  YOGA
+  BREATHING
+  VID_3D
+}
+
+model Exercise {
+  id          String       @id @default(uuid())
+  name        String
+  description String
+  type        ExerciseType
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+  createdBy   User         @relation(fields: [createdById], references: [id])
+  createdById String
 }
