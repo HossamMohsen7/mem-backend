@@ -57,4 +57,9 @@ export const errors = {
     errorCodes.insufficientTokenPermission,
     "Insufficient token permission, need email and profile."
   ),
+  invalidResetPasswordToken: AppError.custom(
+    403,
+    errorCodes.invalidResetPasswordToken,
+    "Invalid reset password token."
+  ),
 } as const;

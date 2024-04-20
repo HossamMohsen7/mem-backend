@@ -29,6 +29,7 @@ model User {
   resetPasswordExpiry    DateTime?
   resetPasswordIp        String?
   resetPasswordRequestAt DateTime?
+  lastPasswordChange     DateTime?
   tokenIds               String[]  @default([])
 
   createdAt           DateTime       @default(now())

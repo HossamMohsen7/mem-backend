@@ -33,18 +33,16 @@ export const externalAuthSchema = z.object({
 });
 
 export const resetPasswordRequestSchema = z.object({
-  email: z.string().email().or(z.string().length(11)),
-  method: z.enum(["email", "phone"]).default("email"),
-  verification: z.enum(["code", "url"]).default("code"),
+  email: z.string().email(),
 });
 
 export const resetPasswordValidationSchema = z.object({
-  email: z.string().email().or(z.string().length(11)),
+  email: z.string().email(),
   token: z.string(),
 });
 
 export const resetPasswordSchema = z.object({
-  email: z.string().email().or(z.string().length(11)),
+  email: z.string().email(),
   token: z.string(),
   password: z
     .string()

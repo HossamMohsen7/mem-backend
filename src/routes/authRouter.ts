@@ -13,7 +13,12 @@ import { userModel } from "../models/user.js";
 import {
   passwordSigninSchema,
   passwordSignupSchema,
+  resetPasswordRequestSchema,
+  resetPasswordSchema,
+  resetPasswordValidationSchema,
 } from "../schema/userSchemas.js";
+import { sha256, sixDigit } from "../utils/utils.js";
+
 const router = express.Router();
 
 const generateToken = (user: User): [string, string] => {
@@ -140,6 +145,7 @@ router.post("/refresh", async (req, res) => {
     const newTokenIds = user.tokenIds.filter((id) => id !== decoded.jti);
 
     const [newToken, tokenId] = generateToken(user);
+    console.log(newTokenIds.concat(tokenId));
     await db.user.update({
       where: { id: user.id },
       data: {
@@ -151,8 +157,114 @@ router.post("/refresh", async (req, res) => {
       ...userModel(user),
     });
   } catch (err) {
+    console.log(err);
     throw errors.invalidAuth;
   }
 });
+
+router.post(
+  "/resetpassword",
+  validate({ body: resetPasswordRequestSchema }),
+  async (req, res) => {
+    const { email } = {
+      email: req.body.email.toLowerCase(),
+    };
+
+    const user = await db.user.findFirst({
+      where: { email: email },
+    });
+
+    if (user && user.password) {
+      //check last reset password request and rate limit to 10 minutes
+      if (
+        user.resetPasswordRequestAt &&
+        user.resetPasswordRequestAt > new Date(Date.now() - 10 * 60 * 1000)
+      ) {
+        return res.status(204).end();
+      }
+
+      //generate a 6 digit number
+      const code = sixDigit();
+      //generate sha256 hash of the code
+      const hash = sha256(code);
+      db.user.update({
+        where: { id: user.id },
+        data: {
+          resetPasswordToken: hash,
+          resetPasswordExpiry: new Date(Date.now() + 60 * 60 * 1000), //1 hour expiry
+          resetPasswordIp: req.ip,
+          resetPasswordRequestAt: new Date(),
+        },
+      });
+      //send email
+      //   sendResetPasswordMail(user.email, code);
+    }
+
+    return res.status(204).end();
+  }
+);
+
+//Check if token is valid
+router.post(
+  "/resetpassword/validate",
+  validate({ body: resetPasswordValidationSchema }),
+  async (req, res) => {
+    const { token } = req.body;
+
+    const tokenHash = sha256(token);
+
+    const user = await db.user.findUnique({
+      where: { email: tokenHash },
+    });
+
+    if (!user || user.resetPasswordToken !== tokenHash) {
+      throw errors.invalidResetPasswordToken;
+    }
+
+    if (user.resetPasswordExpiry! < new Date()) {
+      throw errors.invalidResetPasswordToken;
+    }
+
+    return res.status(200).json({ valid: true });
+  }
+);
+
+router.post(
+  "/resetpassword/confirm",
+  validate({ body: resetPasswordSchema }),
+  async (req, res) => {
+    const { password, token, email } = req.body;
+
+    const tokenHash = sha256(token);
+
+    const user = await db.user.findUnique({
+      where: { email: email },
+    });
+
+    if (!user || user.resetPasswordToken !== tokenHash) {
+      throw errors.invalidResetPasswordToken;
+    }
+
+    if (user.resetPasswordExpiry! < new Date()) {
+      throw errors.invalidResetPasswordToken;
+    }
+
+    const hash = await argon2.hash(password);
+
+    await db.user.update({
+      where: { id: user.id },
+      data: {
+        password: hash,
+        resetPasswordToken: null,
+        resetPasswordExpiry: null,
+        resetPasswordIp: null,
+        lastPasswordChange: new Date(),
+        tokenIds: [],
+      },
+    });
+
+    return res.status(204).end();
+  }
+);
 
 export default router;
