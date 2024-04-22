@@ -12,6 +12,7 @@ import { errorHandler } from "./utils/errorHandler.js";
 import { errors } from "./config/errors.js";
 import AppError from "./models/error.js";
 import userRouter from "./routes/userRouter.js";
+import notificationsRouter from "./routes/notificationsRouter.js";
 
 (BigInt.prototype as any).toJSON = function () {
   return this.toString();
@@ -54,6 +55,7 @@ const setupRouters = () => {
 
   app.use("/auth", authRouter);
   app.use("/user", userRouter);
+  app.use("/notifications", notificationsRouter);
 };
 
 const setupErrorHandlers = () => {
@@ -83,6 +85,7 @@ const setupErrorHandlers = () => {
         errorCode: error.errorCode,
         error: error.message,
         stack: process.env.NODE_ENV === "development" ? error.stack : undefined,
+        data: error.data,
       });
     }
   );

@@ -49,11 +49,13 @@
     "morgan": "^1.10.0",
     "nanoid": "^5.0.7",
     "reflect-metadata": "^0.2.2",
+    "resend": "^3.2.0",
     "slugify": "^1.6.6",
     "socket.io": "^4.7.5",
     "uuid": "^9.0.1",
     "zod": "^3.22.5",
-    "zod-express-validator": "^0.0.3"
+    "zod-express-validator": "^0.0.3",
+    "zod-validation-error": "^3.1.0"
   },
   "pnpm": {
     "overrides": {
