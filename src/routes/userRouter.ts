@@ -51,32 +51,37 @@ router.post(
     });
 
     for await (const { stream, field, filename } of files) {
+      const ext = filename.split(".").pop();
       const storage = firebaseApp.storage();
-      const result = await storage
-        .bucket()
-        .file(`/pics/${req.user.id}.${filename.split("\\.")[1]}`)
-        .save(stream);
+      // await storage.bucket().file(`pics/${req.user.id}.${ext}`);
+
+      const blob = storage.bucket().file(`pics/${req.user.id}.${ext}`);
+      const blobStream = blob.createWriteStream();
+
+      stream.pipe(blobStream);
+
+      await new Promise((resolve, reject) => {
+        blobStream.on("finish", resolve);
+        blobStream.on("error", reject);
+      });
+
+      const url = await blob.getSignedUrl({
+        action: "read",
+        expires: "03-09-2491",
+      });
+
+      console.log(url);
 
       await db.user.update({
         where: { id: req.user!.id },
         data: {
-          profilePictureUrl:
-            "https://storage.googleapis.com/nmemapp.appspot.com/pics/" +
-            req.user.id +
-            "." +
-            filename.split("\\.")[1],
+          profilePictureUrl: url[0],
         },
       });
 
-      return res
-        .status(200)
-        .send({
-          url:
-            "https://storage.googleapis.com/nmemapp.appspot.com/pics/" +
-            req.user.id +
-            "." +
-            filename.split("\\.")[1],
-        });
+      return res.status(200).send({
+        url: url[0],
+      });
     }
 
     // await db.user.update({

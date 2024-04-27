@@ -48,6 +48,12 @@ router.get(
       throw errors.notAllowed;
     }
 
+    if (req.user.type === "ADMIN") {
+      const notifications = await db.notification.findMany();
+      res.status(200).send(notifications);
+      return;
+    }
+
     const notifications = await db.notification.findMany({
       where: {
         for: {
@@ -57,6 +63,66 @@ router.get(
     });
 
     res.status(200).send(notifications);
+  }
+);
+
+//delete notification
+router.delete(
+  "/:id",
+  authTokenMiddleware,
+  authUserMiddleware,
+  async (req, res) => {
+    if (!req.user || req.user.type !== "ADMIN") {
+      throw errors.notAllowed;
+    }
+
+    const notification = await db.notification.findUnique({
+      where: { id: req.params.id },
+    });
+
+    if (!notification) {
+      throw errors.notFound;
+    }
+
+    await db.notification.delete({ where: { id: req.params.id } });
+
+    return res.status(204).send();
+  }
+);
+
+//edit notification
+router.put(
+  "/:id",
+  authTokenMiddleware,
+  authUserMiddleware,
+  validate({ body: newNotificationSchema }),
+  async (req, res) => {
+    if (!req.user || req.user.type !== "ADMIN") {
+      throw errors.notAllowed;
+    }
+
+    const notification = await db.notification.findUnique({
+      where: { id: req.params.id },
+    });
+
+    if (!notification) {
+      throw errors.notFound;
+    }
+
+    await db.notification.update({
+      where: { id: req.params.id },
+      data: {
+        message: req.body.message,
+        for:
+          req.body.for == "related"
+            ? "RELATED"
+            : req.body.for === "stutterer"
+            ? "STUTTERER"
+            : "ALL",
+      },
+    });
+
+    return res.status(200).send();
   }
 );
 
