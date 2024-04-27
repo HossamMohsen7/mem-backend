@@ -14,6 +14,12 @@ enum UserType {
   STUTTERER
 }
 
+enum NotificationTarget {
+  ALL
+  RELATED
+  STUTTERER
+}
+
 model User {
   id                String   @id @default(uuid())
   email             String   @unique
@@ -24,6 +30,7 @@ model User {
   username          String   @unique
   googleToken       String?
   profilePictureUrl String?
+  firebaseToken     String?
 
   resetPasswordToken     String?
   resetPasswordExpiry    DateTime?
@@ -39,6 +46,7 @@ model User {
   createdGroups       Group[]        @relation("CreatedBy")
   sentMessages        Message[]
   createdExercies     Exercise[]
+  createdMeetings     Meeting[]
 }
 
 model Group {
@@ -53,11 +61,11 @@ model Group {
 }
 
 model Notification {
-  id      String   @id @default(uuid())
+  id      String             @id @default(uuid())
   message String
-  for     UserType
+  for     NotificationTarget
   userId  String
-  user    User     @relation(fields: [userId], references: [id])
+  user    User               @relation(fields: [userId], references: [id])
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -89,4 +97,17 @@ model Exercise {
   updatedAt   DateTime     @updatedAt
   createdBy   User         @relation(fields: [createdById], references: [id])
   createdById String
+}
+
+model Meeting {
+  id               String    @id @default(uuid())
+  name             String
+  url              String
+  dateTime         DateTime
+  for              UserType?
+  selectedUsersIds String[]  @default([])
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+  createdBy        User      @relation(fields: [createdById], references: [id])
+  createdById      String
 }

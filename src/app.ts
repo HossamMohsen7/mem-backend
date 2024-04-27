@@ -13,6 +13,7 @@ import { errors } from "./config/errors.js";
 import AppError from "./models/error.js";
 import userRouter from "./routes/userRouter.js";
 import notificationsRouter from "./routes/notificationsRouter.js";
+import meetingsRouter from "./routes/meetingsRouter.js";
 
 (BigInt.prototype as any).toJSON = function () {
   return this.toString();
@@ -56,6 +57,7 @@ const setupRouters = () => {
   app.use("/auth", authRouter);
   app.use("/user", userRouter);
   app.use("/notifications", notificationsRouter);
+  app.use("/meetings", meetingsRouter);
 };
 
 const setupErrorHandlers = () => {

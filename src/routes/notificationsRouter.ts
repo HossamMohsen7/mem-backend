@@ -23,7 +23,12 @@ router.post(
     const notification = await db.notification.create({
       data: {
         message: req.body.message,
-        for: req.body.for == "related" ? "RELATED" : "STUTTERER",
+        for:
+          req.body.for == "related"
+            ? "RELATED"
+            : req.body.for === "stutterer"
+            ? "STUTTERER"
+            : "ALL",
         userId: req.user.id,
       },
     });
@@ -45,7 +50,9 @@ router.get(
 
     const notifications = await db.notification.findMany({
       where: {
-        for: req.user.type,
+        for: {
+          in: ["ALL", req.user.type === "STUTTERER" ? "STUTTERER" : "RELATED"],
+        },
       },
     });
 
