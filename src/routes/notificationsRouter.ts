@@ -35,7 +35,7 @@ router.post(
 
     //TODO: firebase push notification
 
-    res.status(201).send(notification);
+    return res.status(201).send(notification);
   }
 );
 
@@ -61,7 +61,7 @@ router.get(
       },
     });
 
-    res.status(200).send(notifications);
+    return res.status(200).send(notifications);
   }
 );
 

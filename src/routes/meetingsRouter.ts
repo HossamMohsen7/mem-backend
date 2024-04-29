@@ -56,9 +56,17 @@ router.get(
 
     const meetings = await db.meeting.findMany({
       where: {
-        for: {
-          in: ["ALL", req.user.type === "STUTTERER" ? "STUTTERER" : "RELATED"],
-        },
+        OR: [
+          {
+            for: {
+              in: [
+                "ALL",
+                req.user.type === "STUTTERER" ? "STUTTERER" : "RELATED",
+              ],
+            },
+          },
+          { selectedUsersIds: { has: req.user.id } },
+        ],
       },
     });
 
