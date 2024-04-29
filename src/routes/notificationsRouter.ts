@@ -50,8 +50,7 @@ router.get(
 
     if (req.user.type === "ADMIN") {
       const notifications = await db.notification.findMany();
-      res.status(200).send(notifications);
-      return;
+      return res.status(200).send(notifications);
     }
 
     const notifications = await db.notification.findMany({
@@ -109,7 +108,7 @@ router.put(
       throw errors.notFound;
     }
 
-    await db.notification.update({
+    const updated = await db.notification.update({
       where: { id: req.params.id },
       data: {
         message: req.body.message,
@@ -122,7 +121,7 @@ router.put(
       },
     });
 
-    return res.status(200).send();
+    return res.status(200).send(updated);
   }
 );
 

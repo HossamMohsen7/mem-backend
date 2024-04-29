@@ -37,6 +37,22 @@ router.post(
 );
 
 router.post(
+  "/firebase-id",
+  authTokenMiddleware,
+  authUserMiddleware,
+  async (req, res) => {
+    const { id } = req.body;
+    await db.user.update({
+      where: { id: req.user!.id },
+      data: {
+        firebaseToken: id,
+      },
+    });
+    return res.status(204).end();
+  }
+);
+
+router.post(
   "/changepic",
   authTokenMiddleware,
   authUserMiddleware,

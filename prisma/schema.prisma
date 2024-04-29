@@ -14,7 +14,7 @@ enum UserType {
   STUTTERER
 }
 
-enum NotificationTarget {
+enum Target {
   ALL
   RELATED
   STUTTERER
@@ -61,11 +61,11 @@ model Group {
 }
 
 model Notification {
-  id      String             @id @default(uuid())
+  id      String @id @default(uuid())
   message String
-  for     NotificationTarget
+  for     Target
   userId  String
-  user    User               @relation(fields: [userId], references: [id])
+  user    User   @relation(fields: [userId], references: [id])
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -100,14 +100,14 @@ model Exercise {
 }
 
 model Meeting {
-  id               String    @id @default(uuid())
+  id               String   @id @default(uuid())
   name             String
   url              String
   dateTime         DateTime
-  for              UserType?
-  selectedUsersIds String[]  @default([])
-  createdAt        DateTime  @default(now())
-  updatedAt        DateTime  @updatedAt
-  createdBy        User      @relation(fields: [createdById], references: [id])
+  for              Target
+  selectedUsersIds String[] @default([])
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+  createdBy        User     @relation(fields: [createdById], references: [id])
   createdById      String
 }
