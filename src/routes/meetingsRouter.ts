@@ -83,6 +83,16 @@ router.delete(
       throw errors.notAllowed;
     }
 
+    const meeting = await db.meeting.findUnique({
+      where: {
+        id: req.params.id,
+      },
+    });
+
+    if (!meeting) {
+      throw errors.notFound;
+    }
+
     await db.meeting.delete({
       where: {
         id: req.params.id,
@@ -101,6 +111,16 @@ router.put(
   async (req, res) => {
     if (!req.user || req.user.type !== "ADMIN") {
       throw errors.notAllowed;
+    }
+
+    const meeting = await db.meeting.findUnique({
+      where: {
+        id: req.params.id,
+      },
+    });
+
+    if (!meeting) {
+      throw errors.notFound;
     }
 
     const updated = await db.meeting.update({
