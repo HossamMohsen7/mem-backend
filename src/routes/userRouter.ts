@@ -7,6 +7,7 @@ import { userModel } from "../models/user.js";
 import { db } from "../db.js";
 import { parseFormData } from "pechkin";
 import { firebaseApp } from "../services/firebase.js";
+import { errors } from "../config/errors.js";
 
 const router = express.Router();
 
@@ -107,6 +108,21 @@ router.post(
     //   },
     // });
     return res.status(204).end();
+  }
+);
+
+router.get(
+  "/all",
+  authTokenMiddleware,
+  authUserMiddleware,
+  async (req, res) => {
+    //admin
+    if (!req.user || req.user.type !== "ADMIN") {
+      throw errors.notAllowed;
+    }
+
+    const users = await db.user.findMany();
+    return res.status(200).send(users.map((user) => userModel(user)));
   }
 );
 

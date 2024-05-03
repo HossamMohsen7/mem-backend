@@ -19,4 +19,14 @@ const app = admin.initializeApp({
   ),
 });
 
+export const sendNotification = async (tokens: string[], message: string) => {
+  await admin.messaging().sendEachForMulticast({
+    tokens,
+    notification: {
+      title: "New Notification!",
+      body: message,
+    },
+  });
+};
+
 export { app as firebaseApp };

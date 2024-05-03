@@ -7,8 +7,33 @@ import { db } from "../db.js";
 import { errors } from "../config/errors.js";
 import { validate } from "zod-express-validator";
 import { newNotificationSchema } from "../schema/notificationsSchema.js";
+import { Notification } from "@prisma/client";
+import { sendNotification } from "../services/firebase.js";
 
 const router = express.Router();
+
+const doSendNotification = async (notification: Notification) => {
+  const fcmTokens: string[] = [];
+
+  if (notification.for === "ALL") {
+    const users = await db.user.findMany({
+      where: { firebaseToken: { not: null } },
+    });
+    fcmTokens.push(...users.map((u) => u.firebaseToken!));
+  } else if (notification.for === "STUTTERER") {
+    const users = await db.user.findMany({
+      where: { type: "STUTTERER", firebaseToken: { not: null } },
+    });
+    fcmTokens.push(...users.map((u) => u.firebaseToken!));
+  } else {
+    const users = await db.user.findMany({
+      where: { type: "RELATED", firebaseToken: { not: null } },
+    });
+    fcmTokens.push(...users.map((u) => u.firebaseToken!));
+  }
+
+  sendNotification(fcmTokens, notification.message);
+};
 
 router.post(
   "/new",
@@ -33,7 +58,7 @@ router.post(
       },
     });
 
-    //TODO: firebase push notification
+    doSendNotification(notification);
 
     return res.status(201).send(notification);
   }
@@ -120,6 +145,8 @@ router.put(
             : "ALL",
       },
     });
+
+    doSendNotification(updated);
 
     return res.status(200).send(updated);
   }

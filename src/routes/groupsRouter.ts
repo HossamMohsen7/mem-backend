@@ -4,8 +4,8 @@ import {
   authUserMiddleware,
 } from "../middlewares/auth.js";
 import { validate } from "zod-express-validator";
-import { newMeetingSchema } from "../schema/meetingsSchema.js";
 import { errors } from "../config/errors.js";
+import { newGroupSchema } from "../schema/groupsSchema.js";
 import { db } from "../db.js";
 
 const router = express.Router();
@@ -14,29 +14,23 @@ router.post(
   "/new",
   authTokenMiddleware,
   authUserMiddleware,
-  validate({ body: newMeetingSchema }),
+  validate({ body: newGroupSchema }),
   async (req, res) => {
     if (!req.user || req.user.type !== "ADMIN") {
       throw errors.notAllowed;
     }
 
-    const meeting = await db.meeting.create({
+    const group = await db.group.create({
       data: {
         name: req.body.name,
-        url: req.body.url,
-        for:
-          req.body.for == "related"
-            ? "RELATED"
-            : req.body.for === "stutterer"
-            ? "STUTTERER"
-            : "ALL",
-        selectedUsersIds: req.body.selectedUsersIds,
-        dateTime: new Date(req.body.dateTime),
         createdById: req.user.id,
+        members: {
+          connect: req.body.selectedUsersIds.map((id) => ({ id })),
+        },
       },
     });
 
-    return res.status(201).send(meeting);
+    return res.status(201).send(group);
   }
 );
 
@@ -50,27 +44,21 @@ router.get(
     }
 
     if (req.user.type === "ADMIN") {
-      const meetings = await db.meeting.findMany();
-      return res.status(200).send(meetings);
+      const groups = await db.group.findMany();
+      return res.status(200).send(groups);
     }
 
-    const meetings = await db.meeting.findMany({
+    const groups = await db.group.findMany({
       where: {
-        OR: [
-          {
-            for: {
-              in: [
-                "ALL",
-                req.user.type === "STUTTERER" ? "STUTTERER" : "RELATED",
-              ],
-            },
+        members: {
+          some: {
+            id: req.user.id,
           },
-          { selectedUsersIds: { has: req.user.id } },
-        ],
+        },
       },
     });
 
-    return res.status(200).send(meetings);
+    return res.status(200).send(groups);
   }
 );
 
@@ -83,17 +71,17 @@ router.delete(
       throw errors.notAllowed;
     }
 
-    const meeting = await db.meeting.findUnique({
+    const group = await db.group.findUnique({
       where: {
         id: req.params.id,
       },
     });
 
-    if (!meeting) {
+    if (!group) {
       throw errors.notFound;
     }
 
-    await db.meeting.delete({
+    await db.group.delete({
       where: {
         id: req.params.id,
       },
@@ -107,39 +95,35 @@ router.put(
   "/:id",
   authTokenMiddleware,
   authUserMiddleware,
-  validate({ body: newMeetingSchema }),
+  validate({ body: newGroupSchema }),
   async (req, res) => {
     if (!req.user || req.user.type !== "ADMIN") {
       throw errors.notAllowed;
     }
 
-    const meeting = await db.meeting.findUnique({
+    const group = await db.group.findUnique({
       where: {
         id: req.params.id,
       },
     });
 
-    if (!meeting) {
+    if (!group) {
       throw errors.notFound;
     }
 
-    const updated = await db.meeting.update({
-      where: { id: req.params.id },
+    await db.group.update({
+      where: {
+        id: req.params.id,
+      },
       data: {
         name: req.body.name,
-        url: req.body.url,
-        for:
-          req.body.for == "related"
-            ? "RELATED"
-            : req.body.for === "stutterer"
-            ? "STUTTERER"
-            : "ALL",
-        selectedUsersIds: req.body.selectedUsersIds,
-        dateTime: new Date(req.body.dateTime),
+        members: {
+          set: req.body.selectedUsersIds.map((id) => ({ id })),
+        },
       },
     });
 
-    return res.status(200).send(updated);
+    return res.status(200).send();
   }
 );
 
