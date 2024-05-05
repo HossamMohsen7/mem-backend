@@ -7,6 +7,7 @@ import { validate } from "zod-express-validator";
 import { errors } from "../config/errors.js";
 import { newGroupSchema } from "../schema/groupsSchema.js";
 import { db } from "../db.js";
+import { userModel } from "../models/user.js";
 
 const router = express.Router();
 
@@ -124,6 +125,54 @@ router.put(
     });
 
     return res.status(200).send();
+  }
+);
+
+router.get(
+  "/:id/messages",
+  authTokenMiddleware,
+  authUserMiddleware,
+  async (req, res) => {
+    if (!req.user) {
+      throw errors.notAllowed;
+    }
+
+    const group = await db.group.findUnique({
+      where: {
+        id: req.params.id,
+      },
+      include: {
+        members: true,
+      },
+    });
+
+    if (!group) {
+      throw errors.notFound;
+    }
+
+    //check if member of the group
+    if (
+      !group.members.some((member) => member.id === req.user!.id) &&
+      req.user.type !== "ADMIN"
+    ) {
+      throw errors.notAllowed;
+    }
+
+    const messages = await db.message.findMany({
+      where: {
+        groupId: req.params.id,
+      },
+      include: {
+        sender: true,
+      },
+    });
+
+    return res.status(200).send(
+      messages.map((message) => ({
+        ...message,
+        sender: userModel(message.sender),
+      }))
+    );
   }
 );
 

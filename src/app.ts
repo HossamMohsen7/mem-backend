@@ -15,42 +15,19 @@ import userRouter from "./routes/userRouter.js";
 import notificationsRouter from "./routes/notificationsRouter.js";
 import meetingsRouter from "./routes/meetingsRouter.js";
 import { Server } from "socket.io";
+import groupsRouter from "./routes/groupsRouter.js";
+import jwt, { JwtPayload } from "jsonwebtoken";
+import { db } from "./db.js";
+import { SocketManager } from "./socketManager.js";
 
 (BigInt.prototype as any).toJSON = function () {
   return this.toString();
 };
 const app = express();
 const http = createServer(app);
-export const io = new Server(http, {
-  cors: {
-    origin: "*",
-  },
-});
 
 const setupSocketIO = () => {
-  io.use((socket, next) => {
-    //check authentication bearer token
-
-    const authHeader = socket.handshake.headers.authorization;
-    if (!authHeader) {
-      return next(new Error("Authentication error"));
-    }
-
-    const token = authHeader.split(" ")[1];
-    if (!token) {
-      return next(new Error("Authentication error"));
-    }
-
-    next();
-  });
-
-  io.on("connection", (socket) => {
-    console.log("connection", socket.request);
-    console.log("a user connected");
-    socket.on("disconnect", () => {
-      console.log("user disconnected");
-    });
-  });
+  SocketManager.init(http);
 };
 
 const setupExpressApp = async () => {
@@ -90,6 +67,7 @@ const setupRouters = () => {
   app.use("/user", userRouter);
   app.use("/notifications", notificationsRouter);
   app.use("/meetings", meetingsRouter);
+  app.use("/groups", groupsRouter);
 };
 
 const setupErrorHandlers = () => {
