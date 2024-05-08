@@ -94,6 +94,7 @@ const setupErrorHandlers = () => {
       next: express.NextFunction
     ) => {
       return res.status(error.statusCode).json({
+        success: false,
         errorCode: error.errorCode,
         error: error.message,
         stack: process.env.NODE_ENV === "development" ? error.stack : undefined,

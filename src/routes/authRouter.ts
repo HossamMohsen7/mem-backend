@@ -121,7 +121,7 @@ router.post("/validate", async (req, res) => {
   const { token } = req.body;
   try {
     jwt.verify(token, env.JWT_SECRET) as JwtPayload;
-    return res.status(204).end();
+    return res.status(200).json({ success: true });
   } catch (err) {
     throw errors.invalidAuth;
   }
