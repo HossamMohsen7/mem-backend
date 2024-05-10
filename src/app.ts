@@ -14,10 +14,8 @@ import AppError from "./models/error.js";
 import userRouter from "./routes/userRouter.js";
 import notificationsRouter from "./routes/notificationsRouter.js";
 import meetingsRouter from "./routes/meetingsRouter.js";
-import { Server } from "socket.io";
 import groupsRouter from "./routes/groupsRouter.js";
-import jwt, { JwtPayload } from "jsonwebtoken";
-import { db } from "./db.js";
+import exercisesRouter from "./routes/exercisesRouter.js";
 import { SocketManager } from "./socketManager.js";
 
 (BigInt.prototype as any).toJSON = function () {
@@ -68,6 +66,7 @@ const setupRouters = () => {
   app.use("/notifications", notificationsRouter);
   app.use("/meetings", meetingsRouter);
   app.use("/groups", groupsRouter);
+  app.use("/exercises", exercisesRouter);
 };
 
 const setupErrorHandlers = () => {

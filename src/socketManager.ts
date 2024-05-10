@@ -5,6 +5,7 @@ import jwt, { JwtPayload } from "jsonwebtoken";
 import env from "./env.js";
 import { db } from "./db.js";
 import { User } from "@prisma/client";
+import { userModel } from "./models/user.js";
 
 interface ServerToClientEvents {
   message: (from: string, message: any) => void;
@@ -101,10 +102,16 @@ class SocketManager {
             groupId: to,
             content: message,
           },
+          include: { sender: true },
         });
 
-        this.io.to(to).emit("message", to, newMessage);
-        ack(true, newMessage);
+        const obj = {
+          ...newMessage,
+          sender: userModel(newMessage.sender),
+        };
+
+        this.io.to(to).emit("message", to, obj);
+        ack(true, obj);
       });
     });
   }
