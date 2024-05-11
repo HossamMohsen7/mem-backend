@@ -73,10 +73,13 @@ class SocketManager {
 
       //get groups that use is in
       const userId = socket.data.user.id;
-      const group = await db.group.findMany({
-        where: { members: { some: { id: userId } } },
-      });
-      group.forEach((g) => {
+      const groups =
+        socket.data.user.type === "ADMIN"
+          ? await db.group.findMany()
+          : await db.group.findMany({
+              where: { members: { some: { id: userId } } },
+            });
+      groups.forEach((g) => {
         socket.join(g.id);
       });
 
@@ -94,17 +97,25 @@ class SocketManager {
           where: { id: to },
           include: { members: true },
         });
-        if (socket.data.user.type !== "ADMIN") {
-          if (!toGroup || !toGroup.members.some((m) => m.id === userId)) {
-            ack(false, "Group not found");
-            return;
-          }
+
+        if (!toGroup) {
+          ack(false, "Group not found");
+          return;
+        }
+
+        //if not admin or not in group
+        if (
+          !toGroup.members.some((m) => m.id === userId) &&
+          socket.data.user.type !== "ADMIN"
+        ) {
+          ack(false, "Not allowed to send here");
+          return;
         }
 
         const newMessage = await db.message.create({
           data: {
             senderId: userId,
-            groupId: to,
+            groupId: toGroup.id,
             content: message,
           },
           include: { sender: true },
