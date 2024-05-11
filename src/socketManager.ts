@@ -87,13 +87,18 @@ class SocketManager {
       //join groups
 
       socket.on("message", async (to, message, ack) => {
+        console.log("message", to, message);
         const userId = socket.data.user.id;
         //check if user is in group
         const toGroup = await db.group.findUnique({
-          where: { id: to, AND: { members: { some: { id: userId } } } },
+          where: { id: to },
+          include: { members: true },
         });
-        if (!toGroup) {
-          ack(false, "Group not found");
+        if (socket.data.user.type !== "ADMIN") {
+          if (!toGroup || !toGroup.members.some((m) => m.id === userId)) {
+            ack(false, "Group not found");
+            return;
+          }
         }
 
         const newMessage = await db.message.create({
