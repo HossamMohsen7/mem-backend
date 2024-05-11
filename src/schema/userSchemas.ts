@@ -1,20 +1,9 @@
 import * as z from "zod";
-
+const NAME_REGEX =
+  /^[a-zA-Z\u00C0-\u00D6\u00D8-\u00F6\u00F8-\u01FF]+([ \-']{0,1}[a-zA-Z\u00C0-\u00D6\u00D8-\u00F6\u00F8-\u01FF]+){0,2}[.]{0,1}$/;
 export const passwordSignupSchema = z.object({
-  firstName: z
-    .string()
-    .refine((val) => /^[a-zA-Z ]*$/.test(val) && val.split(" ").length <= 4, {
-      message: "Invalid first name",
-    })
-
-    .transform((val) => val.trim()),
-  lastName: z
-    .string()
-    .refine((val) => /^[a-zA-Z ]*$/.test(val) && val.split(" ").length <= 4, {
-      message: "Invalid last name",
-    })
-
-    .transform((val) => val.trim()),
+  firstName: z.string().transform((val) => val.trim()),
+  lastName: z.string().transform((val) => val.trim()),
   email: z.string().email(),
   username: z.string(),
   password: z.string(),

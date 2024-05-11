@@ -20,7 +20,7 @@ const app = admin.initializeApp({
 });
 
 export const sendNotification = async (tokens: string[], message: string) => {
-  await admin.messaging().sendEachForMulticast({
+  const res = await admin.messaging().sendEachForMulticast({
     tokens,
     notification: {
       title: "New Notification!",
