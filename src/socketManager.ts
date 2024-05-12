@@ -121,7 +121,7 @@ class SocketManager {
           sender: userModel(newMessage.sender),
         };
 
-        // this.io.to(to).emit("message", to, obj);
+         this.io.to(to).emit("message", to, obj);
         ack(true, obj);
       });
     });
