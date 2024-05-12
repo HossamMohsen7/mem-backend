@@ -124,7 +124,11 @@ class SocketManager {
           sender: userModel(newMessage.sender),
         };
 
-        socket.in(to).emit("message", to, obj);
+        console.log(
+          "sending to",
+          (await this.io.in(toGroup.id).fetchSockets()).map((s) => s.id)
+        );
+        this.io.to(obj.groupId).emit("message", to, obj);
         ack(true, obj);
       });
     });
