@@ -9,6 +9,7 @@ import { userModel } from "./models/user.js";
 
 interface ServerToClientEvents {
   message: (from: string, message: any) => void;
+  groups: (groups: string[]) => void;
 }
 
 interface ClientToServerEvents {
@@ -76,9 +77,11 @@ class SocketManager {
           : await db.group.findMany({
               where: { members: { some: { id: userId } } },
             });
-      groups.forEach((g) => {
-        socket.join(g.id);
-      });
+      socket.join(groups.map((g) => g.id));
+      socket.emit(
+        "groups",
+        groups.map((g) => g.id)
+      );
 
       socket.on("disconnect", () => {
         console.log("user disconnected");
@@ -121,7 +124,7 @@ class SocketManager {
           sender: userModel(newMessage.sender),
         };
 
-         this.io.to(to).emit("message", to, obj);
+        this.io.to(to).emit("message", to, obj);
         ack(true, obj);
       });
     });
