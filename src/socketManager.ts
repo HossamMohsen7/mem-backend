@@ -57,19 +57,16 @@ class SocketManager {
           throw errors.invalidAuth;
         }
         socket.data.user = user;
-        next();
+        return next();
       } catch (err) {
         return next(errors.invalidAuth);
       }
-
-      next();
     });
   }
 
   static setupListeners() {
     this.io.on("connection", async (socket) => {
-      console.log("connection", socket.request);
-      console.log("a user connected");
+      console.log("a user connected", socket.id, socket.data.user.id);
 
       //get groups that use is in
       const userId = socket.data.user.id;
@@ -86,8 +83,6 @@ class SocketManager {
       socket.on("disconnect", () => {
         console.log("user disconnected");
       });
-
-      //join groups
 
       socket.on("message", async (to, message, ack) => {
         console.log("message", to, message);
@@ -126,7 +121,7 @@ class SocketManager {
           sender: userModel(newMessage.sender),
         };
 
-        this.io.to(to).emit("message", to, obj);
+        // this.io.to(to).emit("message", to, obj);
         ack(true, obj);
       });
     });
