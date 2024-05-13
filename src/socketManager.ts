@@ -18,6 +18,7 @@ interface ClientToServerEvents {
     content: string,
     ack: (status: boolean, message: any) => void
   ) => void;
+  joinRooms: () => void;
 }
 
 interface InterServerEvents {
@@ -85,6 +86,21 @@ class SocketManager {
 
       socket.on("disconnect", () => {
         console.log("user disconnected");
+      });
+
+      socket.on("joinRooms", async () => {
+        const userId = socket.data.user.id;
+        const groups =
+          socket.data.user.type === "ADMIN"
+            ? await db.group.findMany()
+            : await db.group.findMany({
+                where: { members: { some: { id: userId } } },
+              });
+        socket.join(groups.map((g) => g.id));
+        socket.emit(
+          "groups",
+          groups.map((g) => g.id)
+        );
       });
 
       socket.on("message", async (to, message, ack) => {
