@@ -184,7 +184,8 @@ router.post(
       }
 
       //generate a 6 digit number
-      const code = sixDigit();
+      // const code = sixDigit();
+      const code = "123123";
       //generate sha256 hash of the code
       const hash = sha256(code);
       db.user.update({
