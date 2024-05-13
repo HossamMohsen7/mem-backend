@@ -201,7 +201,7 @@ router.post(
       //   sendResetPasswordMail(user.email, code);
     }
 
-    return res.status(204).end();
+    return res.status(200).json({ success: true });
   }
 );
 
@@ -226,7 +226,7 @@ router.post(
       throw errors.invalidResetPasswordToken;
     }
 
-    return res.status(200).json({ valid: true });
+    return res.status(200).json({ success: true });
   }
 );
 
@@ -264,7 +264,7 @@ router.post(
       },
     });
 
-    return res.status(204).end();
+    return res.status(200).json({ success: true });
   }
 );
 
