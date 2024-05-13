@@ -210,9 +210,9 @@ router.post(
   "/resetpassword/validate",
   validate({ body: resetPasswordValidationSchema }),
   async (req, res) => {
-    const { token } = req.body;
+    const { code } = req.body;
 
-    const tokenHash = sha256(token);
+    const tokenHash = sha256(code);
 
     const user = await db.user.findUnique({
       where: { email: tokenHash },
@@ -234,9 +234,9 @@ router.post(
   "/resetpassword/confirm",
   validate({ body: resetPasswordSchema }),
   async (req, res) => {
-    const { password, token, email } = req.body;
+    const { password, code, email } = req.body;
 
-    const tokenHash = sha256(token);
+    const tokenHash = sha256(code);
 
     const user = await db.user.findUnique({
       where: { email: email },

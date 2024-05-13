@@ -27,14 +27,11 @@ export const resetPasswordRequestSchema = z.object({
 
 export const resetPasswordValidationSchema = z.object({
   email: z.string().email(),
-  token: z.string(),
+  code: z.string(),
 });
 
 export const resetPasswordSchema = z.object({
   email: z.string().email(),
-  token: z.string(),
-  password: z
-    .string()
-    .min(8)
-    .regex(/^(?=.*[a-z])(?=.*[A-Z])\S+$/),
+  code: z.string(),
+  password: z.string(),
 });
