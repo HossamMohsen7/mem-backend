@@ -170,7 +170,7 @@ router.post(
       email: req.body.email.toLowerCase(),
     };
 
-    const user = await db.user.findFirst({
+    const user = await db.user.findUnique({
       where: { email: email },
     });
 
@@ -188,7 +188,7 @@ router.post(
       const code = "123123";
       //generate sha256 hash of the code
       const hash = sha256(code);
-      db.user.update({
+      await db.user.update({
         where: { id: user.id },
         data: {
           resetPasswordToken: hash,
