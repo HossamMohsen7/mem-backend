@@ -17,6 +17,8 @@ import meetingsRouter from "./routes/meetingsRouter.js";
 import groupsRouter from "./routes/groupsRouter.js";
 import exercisesRouter from "./routes/exercisesRouter.js";
 import { SocketManager } from "./socketManager.js";
+import { db } from "./db.js";
+import argon2 from "argon2";
 
 (BigInt.prototype as any).toJSON = function () {
   return this.toString();
@@ -111,8 +113,31 @@ const startServer = () => {
   });
 };
 
+const checkAdminAccount = async () => {
+  const admin = await db.user.findUnique({
+    where: { email: "admin@admin.com" },
+  });
+  if (!admin) {
+    const pass = await argon2.hash("admin");
+    await db.user.create({
+      data: {
+        email: "admin@admin.com",
+        password: pass,
+        type: "ADMIN",
+        firstName: "Mem",
+        lastName: "Admin",
+        username: "admin",
+      },
+    });
+  }
+};
+
 const main = async () => {
   console.log("Environment: " + env.NODE_ENV);
+
+  console.log("Checking admin account");
+  checkAdminAccount();
+
   setupExpressApp();
   setupSocketIO();
   startServer();
