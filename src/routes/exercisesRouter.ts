@@ -60,10 +60,12 @@ router.post(
       throw errors.unexpected;
     }
 
+    const typeLower = type.toLowerCase();
+
     const enumType =
-      type == "breathing"
+      typeLower == "breathing"
         ? ExerciseType.BREATHING
-        : type == "yoga"
+        : typeLower == "yoga"
         ? ExerciseType.YOGA
         : ExerciseType.VID_3D;
 
@@ -127,10 +129,12 @@ router.put(
       throw errors.unexpected;
     }
 
+    const typeLower = type.toLowerCase();
+
     const enumType =
-      type == "breathing"
+      typeLower == "breathing"
         ? ExerciseType.BREATHING
-        : type == "yoga"
+        : typeLower == "yoga"
         ? ExerciseType.YOGA
         : ExerciseType.VID_3D;
 
