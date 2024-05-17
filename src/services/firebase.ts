@@ -9,10 +9,7 @@ const app = admin.initializeApp({
   credential: admin.credential.cert(
     JSON.parse(
       fs.readFileSync(
-        path.resolve(
-          __dirname,
-          "../../nmemapp-firebase-adminsdk-28c22-76e35802fc.json"
-        ),
+        path.resolve(__dirname, "../../nmemapp-firebase.json"),
         "utf-8"
       )
     )
