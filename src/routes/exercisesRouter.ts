@@ -60,6 +60,8 @@ router.post(
       throw errors.unexpected;
     }
 
+    console.log(name, description, type);
+
     const typeLower = type.toLowerCase();
 
     const enumType =
