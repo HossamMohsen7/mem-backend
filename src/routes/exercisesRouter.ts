@@ -40,6 +40,18 @@ router.delete(
   }
 );
 
+const getExerciseType: (type: string) => ExerciseType | null = (type) => {
+  const typeLower = type.toLowerCase();
+
+  return typeLower == "breathing"
+    ? ExerciseType.BREATHING
+    : typeLower == "yoga"
+    ? ExerciseType.YOGA
+    : typeLower == "vid_3d"
+    ? ExerciseType.VID_3D
+    : null;
+};
+
 router.post(
   "/new",
   authTokenMiddleware,
@@ -60,16 +72,12 @@ router.post(
       throw errors.unexpected;
     }
 
-    console.log(name, description, type);
+    const enumType = getExerciseType(type.toLowerCase().split("\\.")[1]);
+    console.log(name, description, enumType);
 
-    const typeLower = type.toLowerCase();
-
-    const enumType =
-      typeLower == "breathing"
-        ? ExerciseType.BREATHING
-        : typeLower == "yoga"
-        ? ExerciseType.YOGA
-        : ExerciseType.VID_3D;
+    if (!enumType) {
+      throw errors.unexpected;
+    }
 
     for await (const { stream, field, filename } of files) {
       const ext = filename.split(".").pop();
