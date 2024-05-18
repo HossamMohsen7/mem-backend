@@ -72,7 +72,7 @@ router.post(
       throw errors.unexpected;
     }
 
-    const enumType = getExerciseType(type.toLowerCase().split("\\.")[1]);
+    const enumType = getExerciseType(type.toLowerCase().split(".")[1]);
     console.log(name, description, enumType);
 
     if (!enumType) {
